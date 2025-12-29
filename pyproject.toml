@@ -1,0 +1,45 @@
+[project]
+name = "multi-agent-ai-assistant"
+version = "2.0.0"
+description = "Multi-agent AI assistant with supervisor orchestration, specialized domain agents, and multi-modal interactions"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # Core Framework
+    "fastapi>=0.121.3",
+    "uvicorn>=0.38.0",
+    "streamlit>=1.51.0",
+    "httpx==0.27.2",
+    
+    # Configuration & Environment
+    "pydantic==2.9.2",
+    "pydantic-settings==2.6.0",
+    "python-dotenv==1.0.1",
+    
+    # Memory & Knowledge Graph
+    "zep-cloud==3.0.0",
+    
+    # LLM & LangChain
+    "langchain>=0.1.0",
+    "langchain-core>=0.1.0",
+    "langchain-openai>=0.0.1",
+    "langgraph>=0.0.1",
+    
+    # AI Avatar & Voice
+    "anam-ai>=1.0.0",
+    
+    # LLM Provider (Cerebras only)
+    "openai>=1.0.0",
+    
+    # Tools & Services
+    "serpapi>=0.1.0",  # Job search, flights, recipes
+    "mem0>=1.0.0",  # Long-term memory
+    "chromadb>=0.4.0",  # Vector database for RAG
+    
+    # Real-time Voice Communication
+    "fastrtc>=0.0.1",
+    
+    # Utilities
+    "python-multipart>=0.0.6",
+]
+

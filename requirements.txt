@@ -1,0 +1,41 @@
+# Multi-Agent AI Assistant Requirements
+# Python 3.12+
+
+# Core Framework
+fastapi>=0.121.3
+uvicorn>=0.38.0
+streamlit>=1.51.0
+httpx==0.27.2
+
+# Configuration & Environment
+pydantic
+pydantic-settings
+python-dotenv
+
+# Memory & Knowledge Graph
+
+# LLM & LangChain
+langchain
+langchain-core
+langchain-openai
+langgraph
+
+# AI Avatar & Voice
+anam-python-sdk>=0.4.0
+
+# LLM Provider (Cerebras only)
+openai
+
+# Tools & Services
+serpapi
+mem0ai
+chromadb
+
+# Real-time Voice Communication
+# fastrtc removed
+groq
+gTTS
+
+
+# Utilities
+python-multipart

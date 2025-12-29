@@ -17,20 +17,20 @@ Previously: Basic mem0 + Anam avatar with single LLM
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    Streamlit Frontend                     │
-│                       (Text Chat)                         │
+│                    Streamlit Frontend                    │
+│                       (Text / voice)                     │
 └──────────────────┬───────────────────────────────────────┘
                    │
 ┌──────────────────▼───────────────────────────────────────┐
-│                 FastAPI Backend                           │
+│                 FastAPI Backend                          │
 │         /multi-agent/stream Endpoint                     │
 └──────────────────┬───────────────────────────────────────┘
                    │
 ┌──────────────────▼───────────────────────────────────────┐
 │           SUPERVISOR AGENT (LangGraph)                   │
-│   • Intent Classification                                 │
-│   • Domain Routing                                        │
-│   • Context Management                                    │
+│   • Intent Classification                                │
+│   • Domain Routing                                       │
+│   • Context Management                                   │
 └──────────────────┬───────────────────────────────────────┘
                    │
     ┌──────────────┼──────────────┬────────────┐
@@ -55,7 +55,7 @@ Previously: Basic mem0 + Anam avatar with single LLM
         │
     ┌───▼───────────────────────────────────┐
     │  External APIs & Knowledge Bases      │
-    │  • Google Search/Jobs/Flights/Recipes│
+    │  • Google Search/Jobs/Flights/Recipes │
     │  • Zep Knowledge Graph                │
     │  • Vector Database                    │
     │  • LLM Providers                      │
@@ -76,7 +76,8 @@ Previously: Basic mem0 + Anam avatar with single LLM
 ## 🚀 Key Features
 
 ### Multi-Modal Interactions
-- **💬 Text Chat** - Streamlit-based conversation
+- **🗣️ Unified Voice & Chat** - Semantic voice interaction with auto-summarization
+- **📝 Smart Summaries** - Tabbed view with concise spoken summaries and full detail
 
 ### Advanced Capabilities
 - **🧠 Long-term Memory** - Mem0 integration (never forgets)
@@ -89,7 +90,7 @@ Previously: Basic mem0 + Anam avatar with single LLM
 | Component | Technology |
 |-----------|-----------|
 | **Agent Orchestration** | LangGraph with Supervisor pattern |
-| **LLM** | Cerebras GPT-OSS-120B-Chat |
+| **LLM** | Groq (Llama 3.1 / Mixtral) |
 | **Memory** | Mem0 (persistent, never forgets) |
 | **Vector DB** | ChromaDB for RAG |
 | **Web Tools** | SerpApi for search/jobs/flights/recipes |
@@ -118,13 +119,9 @@ cp .env.example .env
 ```
 
 **Required API Keys:**
-
-- `CEREBRAS_API_KEY` - [Get from Cerebras](https://console.cerebras.ai/) - Only LLM provider
+- `GROQ_API` - [Get from Groq](https://console.groq.com/) - Primary Intelligence & Voice Provider
 - `SERPAPI_KEY` - [Get from SerpApi](https://serpapi.com/)
 - `MEM0_API_KEY` - [Get from Mem0](https://mem0.ai/)
-
-**Optional API Keys:**
-- `GROQ_API_KEY` - [Get from Groq](https://console.groq.com/) - For fast inference
 
 ## 🎮 Running the Application
 
