@@ -50,9 +50,8 @@ Previously: Basic mem0 + Anam avatar with single LLM
         ├─ Tools & Services ─┐
         │                    │
     ┌───▼───────────────────▼──────────────┐
-    │  SerpApi  │ Mem0 | ChromaDB | Groq  │
-    │  News     │ Memory|RAG    | Voice   │
-    └───────────────────────────────────────┘
+    │  SerpApi  │  Mem0 │ ChromaDB │ Groq  │
+    └──────────────────────────────────────┘
         │
     ┌───▼───────────────────────────────────┐
     │  External APIs & Knowledge Bases      │
