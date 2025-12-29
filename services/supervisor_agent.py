@@ -56,8 +56,8 @@ class SupervisorAgent:
         
         return ChatOpenAI(
             model=settings.primary_llm_model,
-            api_key=settings.cerebras_api_key,
-            base_url="https://api.cerebras.ai/v1",
+            api_key=settings.groq_api,
+            base_url="https://api.groq.com/openai/v1",
             temperature=0.3,  # Lower temp for routing decisions
         )
 

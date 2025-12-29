@@ -285,7 +285,7 @@ class ChromaDBService:
             
             context = "\n\n".join(context_documents)
             
-            client = AsyncGroq(api_key=settings.groq_api_key)
+            client = AsyncGroq(api_key=settings.groq_api)
             message = await client.chat.completions.create(
                 model="mixtral-8x7b-32768",
                 messages=[

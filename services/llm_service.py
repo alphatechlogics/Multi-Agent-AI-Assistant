@@ -8,13 +8,13 @@ class LLMService:
     """Service for LLM interactions with Cerebras GPT-OSS-120B-Chat."""
 
     def __init__(self):
-        """Initialize LLM service with Cerebras."""
-        if not settings.cerebras_api_key:
-            raise ValueError("CEREBRAS_API_KEY not configured")
+        """Initialize LLM service with Groq."""
+        if not settings.groq_api:
+            raise ValueError("GROQ_API not configured")
         from openai import AsyncOpenAI
         self.client = AsyncOpenAI(
-            base_url="https://api.cerebras.ai/v1",
-            api_key=settings.cerebras_api_key
+            base_url="https://api.groq.com/openai/v1",
+            api_key=settings.groq_api
         )
 
     async def stream_chat_completion(
@@ -30,7 +30,7 @@ class LLMService:
         try:
             # Stream response
             stream = await self.client.chat.completions.create(
-                model="gpt-oss-120b",
+                model=settings.primary_llm_model,
                 messages=cast(Any, openai_messages),
                 stream=True,
                 temperature=0.8,
@@ -44,7 +44,7 @@ class LLMService:
             # If streaming fails, try non-streaming
             print(f"\nStreaming failed, using non-streaming mode: {e}")
             response = await self.client.chat.completions.create(
-                model="gpt-oss-120b",
+                model=settings.primary_llm_model,
                 messages=cast(Any, openai_messages),
                 stream=False,
                 temperature=0.8,
@@ -53,6 +53,36 @@ class LLMService:
             if response.choices and response.choices[0].message.content:
                 yield response.choices[0].message.content
 
+    async def summarize_text(self, text: str, max_words: int = 300) -> str:
+        """
+        Generate a detailed summary using Groq (Simple Await).
+        """
+        if not text: return ""
+        if not settings.groq_api: return text[:300] + "..."
+        
+        prompt = f"""Summarize the following text into a detailed, spoken-style summary of about {max_words} words.
+        Cover main points and reasoning. Use natural paragraphs.
+        Text:
+        {text[:12000]}"""
+
+        try:
+            # Simple non-streaming call using the class's client (which is now Groq)
+            response = await self.client.chat.completions.create(
+                model=settings.primary_llm_model, # "mixtral-8x7b-32768"
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=1000,
+                stream=False
+            )
+            
+            content = response.choices[0].message.content
+            if content:
+                return content.strip()
+            return text[:300] + "..."
+            
+        except Exception as e:
+            print(f"Error summarizing: {e}")
+            return text[:300] + "..."
 
 # Global service instance
 llm_service = LLMService()
