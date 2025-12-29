@@ -32,7 +32,10 @@ mem0ai
 chromadb
 
 # Real-time Voice Communication
-fastrtc
+# fastrtc removed
+groq
+gTTS
+
 
 # Utilities
 python-multipart
