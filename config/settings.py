@@ -11,10 +11,12 @@ class Settings(BaseSettings):
     # ========================
     anam_api_key: Optional[str] = None
     anam_api_base_url: Optional[str] = None
-    cerebras_api_key: str
+    anam_avatar_id: Optional[str] = None
+    anam_voice_id: Optional[str] = None
+    cerebras_api_key: Optional[str] = None  # Deprecated - use groq_api instead
     serpapi_key: str
     mem0_api_key: str
-    groq_api: str
+    groq_api: str  # Primary LLM API key for all LLM operations
     openai_api_key: Optional[str] = None
 
 
@@ -50,6 +52,7 @@ class Settings(BaseSettings):
     # ========================
     enable_text_chat: bool = True
     enable_voice_agent: bool = True
+    enable_video_avatar: bool = True # Anam AI avatar (requires ANAM_API_KEY)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

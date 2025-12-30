@@ -1,0 +1,56 @@
+# Multi-Agent AI Assistant Environment Configuration
+# Copy this to .env and fill in your API keys
+
+# ========================================
+# REQUIRED API KEYS
+# ========================================
+
+# Primary LLM API (Required - used for all LLM operations)
+GROQ_API=your_groq_api_key_here
+
+# Search and external APIs
+SERPAPI_KEY=your_serpapi_key_here
+MEM0_API_KEY=your_mem0_api_key_here
+
+# ========================================
+# OPTIONAL API KEYS (for enhanced features)
+# ========================================
+
+# High-quality Text-to-Speech (Optional - falls back to gTTS if not provided)
+OPENAI_API_KEY=your_openai_api_key_here
+
+# AI Video Avatar - Anam AI (Optional)
+# Get your API key from https://anam.ai
+# The avatar will speak summaries of responses when enabled
+ANAM_API_KEY=your_anam_api_key_here
+ANAM_API_BASE_URL=https://api.anam.ai
+ANAM_AVATAR_ID=your_avatar_id_here
+ANAM_VOICE_ID=your_voice_id_here
+
+# ========================================
+# FEATURE TOGGLES
+# ========================================
+
+# Enable/disable features
+ENABLE_TEXT_CHAT=true
+ENABLE_VOICE_AGENT=true
+ENABLE_VIDEO_AVATAR=true
+
+# ========================================
+# MODEL CONFIGURATION
+# ========================================
+
+# Primary LLM model (Groq models)
+PRIMARY_LLM_MODEL=llama-3.1-8b-instant
+
+# ========================================
+# MEMORY & STORAGE
+# ========================================
+
+# Mem0 configuration
+MEM0_ENABLED=true
+MEM0_VERSION=v1.0
+
+# ChromaDB configuration
+CHROMADB_COLLECTION_NAME=documents
+CHROMADB_PERSIST_DIRECTORY=./data/chroma

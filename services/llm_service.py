@@ -1,11 +1,11 @@
-"""LLM service for Cerebras GPT-OSS-120B-Chat."""
+"""LLM service for Groq-powered LLM interactions."""
 import json
 from typing import AsyncGenerator, List, Dict, Any, Optional, cast
 from config import settings
 
 
 class LLMService:
-    """Service for LLM interactions with Cerebras GPT-OSS-120B-Chat."""
+    """Service for LLM interactions using Groq API."""
 
     def __init__(self):
         """Initialize LLM service with Groq."""
@@ -22,7 +22,7 @@ class LLMService:
         messages: List[Dict[str, str]],
         system_prompt: str,
     ) -> AsyncGenerator[str, None]:
-        """Stream chat completion from Cerebras GPT-OSS-120B-Chat."""
+        """Stream chat completion from Groq LLM."""
         # Prepend system message
         openai_messages = [{"role": "system", "content": system_prompt}]
         openai_messages.extend(messages)
@@ -53,35 +53,78 @@ class LLMService:
             if response.choices and response.choices[0].message.content:
                 yield response.choices[0].message.content
 
-    async def summarize_text(self, text: str, max_words: int = 300) -> str:
+    async def summarize_text(self, text: str, max_words: int = 150) -> str:
         """
-        Generate a detailed summary using Groq (Simple Await).
-        """
-        if not text: return ""
-        if not settings.groq_api: return text[:300] + "..."
+        Generate a concise, spoken-style summary using Groq.
         
-        prompt = f"""Summarize the following text into a detailed, spoken-style summary of about {max_words} words.
-        Cover main points and reasoning. Use natural paragraphs.
-        Text:
-        {text[:12000]}"""
+        This summary is optimized for TTS playback - conversational and easy to listen to.
+        
+        Args:
+            text: The text to summarize
+            max_words: Target word count for the summary (default 150 for TTS)
+            
+        Returns:
+            A summarized version of the text suitable for audio playback
+        """
+        if not text or not text.strip():
+            print("[Summarize] No text provided")
+            return ""
+            
+        if not settings.groq_api:
+            print("[Summarize] GROQ_API not configured")
+            return text[:300] + "..."
+        
+        # Clean the input text
+        clean_text = text.strip()[:12000]  # Limit input size
+        
+        prompt = f"""Create a concise, conversational summary of the following text. 
+The summary should be:
+- About {max_words} words maximum
+- Written in a natural, spoken style (as if explaining to a friend)
+- Cover the key points and main takeaways
+- Avoid bullet points or lists - use flowing sentences
+- Easy to understand when read aloud
+
+Text to summarize:
+---
+{clean_text}
+---
+
+Concise spoken summary:"""
 
         try:
-            # Simple non-streaming call using the class's client (which is now Groq)
+            print(f"[Summarize] Processing text of {len(clean_text)} chars...")
+            
             response = await self.client.chat.completions.create(
-                model=settings.primary_llm_model, # "mixtral-8x7b-32768"
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,
-                max_tokens=1000,
+                model=settings.primary_llm_model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a helpful assistant that creates clear, concise summaries suitable for audio playback. Keep your summaries conversational and natural-sounding."
+                    },
+                    {
+                        "role": "user", 
+                        "content": prompt
+                    }
+                ],
+                temperature=0.5,  # Lower temp for more consistent summaries
+                max_tokens=500,
                 stream=False
             )
             
             content = response.choices[0].message.content
-            if content:
-                return content.strip()
+            if content and content.strip():
+                summary = content.strip()
+                print(f"[Summarize] Generated summary of {len(summary)} chars")
+                return summary
+            
+            print("[Summarize] Empty response from LLM")
             return text[:300] + "..."
             
         except Exception as e:
-            print(f"Error summarizing: {e}")
+            print(f"[Summarize] Error: {e}")
+            import traceback
+            traceback.print_exc()
             return text[:300] + "..."
 
 # Global service instance
