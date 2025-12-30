@@ -78,6 +78,7 @@ Previously: Basic mem0 + Anam avatar with single LLM
 ### Multi-Modal Interactions
 - **🗣️ Unified Voice & Chat** - Semantic voice interaction with auto-summarization
 - **📝 Smart Summaries** - Tabbed view with concise spoken summaries and full detail
+- **🎥 AI Video Avatar** - Anam AI integration (demo mode available)
 
 ### Advanced Capabilities
 - **🧠 Long-term Memory** - Mem0 integration (never forgets)
@@ -97,6 +98,7 @@ Previously: Basic mem0 + Anam avatar with single LLM
 | **Knowledge Graph** | Zep Cloud |
 | **Backend** | FastAPI with streaming |
 | **Frontend** | Streamlit |
+| **AI Avatar** | Anam AI (optional) |
 
 ## 📦 Installation
 

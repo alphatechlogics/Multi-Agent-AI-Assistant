@@ -19,7 +19,9 @@ MEM0_API_KEY=your_mem0_api_key_here
 # High-quality Text-to-Speech (Optional - falls back to gTTS if not provided)
 OPENAI_API_KEY=your_openai_api_key_here
 
-# AI Video Avatar (Optional - requires Anam AI subscription)
+# AI Video Avatar - Anam AI (Optional)
+# Get your API key from https://anam.ai
+# The avatar will speak summaries of responses when enabled
 ANAM_API_KEY=your_anam_api_key_here
 ANAM_API_BASE_URL=https://api.anam.ai
 ANAM_AVATAR_ID=your_avatar_id_here
@@ -32,7 +34,7 @@ ANAM_VOICE_ID=your_voice_id_here
 # Enable/disable features
 ENABLE_TEXT_CHAT=true
 ENABLE_VOICE_AGENT=true
-ENABLE_VIDEO_AVATAR=false
+ENABLE_VIDEO_AVATAR=true
 
 # ========================================
 # MODEL CONFIGURATION

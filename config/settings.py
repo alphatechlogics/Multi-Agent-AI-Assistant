@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     # ========================
     enable_text_chat: bool = True
     enable_voice_agent: bool = True
-    enable_video_avatar: bool = False  # Anam AI avatar (requires ANAM_API_KEY)
+    enable_video_avatar: bool = True # Anam AI avatar (requires ANAM_API_KEY)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

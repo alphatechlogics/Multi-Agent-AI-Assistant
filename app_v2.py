@@ -80,6 +80,8 @@ if "last_agent" not in st.session_state:
     st.session_state.last_agent = None
 if "last_processed_audio" not in st.session_state:
     st.session_state.last_processed_audio = None
+if "anam_session_token" not in st.session_state:
+    st.session_state.anam_session_token = None
 
 # ========================
 # SIDEBAR: SESSION MANAGEMENT
@@ -148,15 +150,24 @@ with st.sidebar:
 
 if st.session_state.session_id:
     # Tabs for different views
-    tab_chat, tab_agents, tab_memory = st.tabs([
+    tab_chat, tab_agents, tab_memory, tab_avatar = st.tabs([
         "💬 Chat",
         "🤖 Agent Info",
-        "🧠 Memory"
+        "🧠 Memory",
+        "🎥 Avatar"
     ])
     
     # -------- TAB 1: CHAT --------
     with tab_chat:
         st.subheader("💬 Multi-Modal Agent Chat")
+
+        # Avatar status indicator (minimal, clean)
+        avatar_active = bool(st.session_state.anam_session_token)
+        is_demo = avatar_active and st.session_state.anam_session_token.get("isDemo", False)
+
+        if avatar_active:
+            avatar_label = "🎭 Avatar Active" if not is_demo else "🎭 Demo Mode"
+            st.success(avatar_label)
         
         # Display conversation history
         if st.session_state.conversation_history:
@@ -166,18 +177,25 @@ if st.session_state.session_id:
                     st.chat_message("user").write(msg["content"])
                 else:
                     with st.chat_message("assistant"):
+                        # Standard response display
                         if "summary" in msg:
-                            tab_sum, tab_det = st.tabs(["📝 Summary", "📄 Full Detail"])
+                            tab_sum, tab_det, tab_audio = st.tabs(["📝 Summary", "📄 Full Detail", "🔊 Audio"])
                             with tab_sum:
                                 st.write(msg["summary"])
                             with tab_det:
                                 st.write(msg["content"])
+                            with tab_audio:
+                                if "audio_bytes" in msg and msg["audio_bytes"]:
+                                    st.audio(msg["audio_bytes"], format="audio/mp3")
+                                else:
+                                    st.info("Audio not available")
                         else:
                             st.write(msg["content"])
-                        
+
                         if "agent" in msg:
                             agent_name = msg.get("agent", "unknown")
-                            st.caption(f"Agent: {agent_name}")
+                            avatar_indicator = " 🎭" if st.session_state.anam_session_token else ""
+                            st.caption(f"Agent: {agent_name}{avatar_indicator}")
         
 
         # --- UNIFIED INPUT AREA ---
@@ -306,15 +324,9 @@ if st.session_state.session_id:
                     else:
                         summary_text = "No response received."
 
-                    # TTS Logic - Generate audio for the summary BEFORE creating tabs
-                    # Always try to generate audio, even if it might fail
+                    # TTS Logic - Generate audio for the summary
                     audio_bytes = None
-                    tts_error_message = None
                     tts_success = False
-
-                    # Check TTS configuration
-                    openai_configured = bool(settings.openai_api_key)
-                    groq_configured = bool(settings.groq_api)
 
                     # Generate audio for summary
                     try:
@@ -322,15 +334,21 @@ if st.session_state.session_id:
                             voice_service.text_to_speech(summary_text)
                         )
                         tts_success = audio_bytes is not None and len(audio_bytes) >= 1000
-
                     except Exception as tts_err:
                         tts_success = False
                         audio_bytes = None
 
-                    # Display Tabs with Summary, Full Detail, and Audio
+                    # Check if avatar is active
+                    avatar_active = bool(st.session_state.anam_session_token)
+
+                    # Display Tabs - include Avatar tab if active
                     st.divider()
-                    st.subheader("📋 Response Details & Audio")
-                    tab_sum, tab_det, tab_audio = st.tabs(["📝 Summary", "📄 Full Detail", "🔊 Audio"])
+                    st.subheader("📋 Response Details")
+
+                    if avatar_active:
+                        tab_sum, tab_det, tab_audio, tab_avatar = st.tabs(["📝 Summary", "📄 Full Detail", "🔊 Audio", "🎭 Avatar"])
+                    else:
+                        tab_sum, tab_det, tab_audio = st.tabs(["📝 Summary", "📄 Full Detail", "🔊 Audio"])
 
                     with tab_sum:
                         st.write(summary_text)
@@ -343,21 +361,42 @@ if st.session_state.session_id:
                             st.audio(audio_bytes, format="audio/mp3", autoplay=False)
                         else:
                             st.info("Audio not available")
-                    
-                    st.caption(f"🤖 Agent: {agent_used}")
 
-                    # Add to history
+                    # Avatar video tab (if active)
+                    if avatar_active:
+                        with tab_avatar:
+                            session = st.session_state.anam_session_token
+                            session_token = session.get("sessionToken", "demo-token")
+                            is_demo = session.get("isDemo", False)
+
+                            if is_demo:
+                                st.info("🎭 Demo Mode - Avatar speaking summary")
+                            else:
+                                st.success("🎭 Avatar speaking summary")
+
+                            # Show avatar embed
+                            avatar_html = anam_service.get_embed_html(
+                                session_token, 
+                                width=450, 
+                                height=320,
+                                speaking_text=summary_text
+                            )
+                            components.html(avatar_html, height=340)
+                    
+                    # Agent and avatar info
+                    avatar_indicator = " 🎭" if st.session_state.anam_session_token else ""
+                    st.caption(f"🤖 Agent: {agent_used}{avatar_indicator}")
+
+                    # Add to history (including audio for replay)
                     st.session_state.conversation_history.append({
                         "role": "assistant",
                         "content": response_text,
                         "agent": agent_used,
-                        "summary": summary_text
+                        "summary": summary_text,
+                        "audio_bytes": audio_bytes if tts_success else None
                     })
-                    
-                    st.session_state.last_agent = agent_used
 
-                    # Don't rerun immediately - let the tabs render first
-                    # st.rerun()  # Commented out to allow tabs to display
+                    st.session_state.last_agent = agent_used
                     
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -451,6 +490,137 @@ if st.session_state.session_id:
                 st.warning(f"Could not retrieve memories: {e}")
         else:
             st.info("💾 Mem0 integration not enabled. Enable in settings to use long-term memory.")
+
+    # -------- TAB 4: AVATAR --------
+    with tab_avatar:
+        st.subheader("🎥 AI Video Avatar")
+
+        # Check avatar configuration
+        is_configured = anam_service.is_configured()
+
+        if st.session_state.anam_session_token:
+            session = st.session_state.anam_session_token
+            is_demo = session.get("isDemo", False)
+
+            # Status header
+            if is_demo:
+                st.warning("🎭 Demo Mode - Configure ANAM_API_KEY for live video")
+            else:
+                st.success("🎭 Live Avatar Connected")
+
+            # Avatar info bar
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Name", session.get("personaName", "AI Assistant"))
+            with col2:
+                st.metric("Mode", "Demo" if is_demo else "Live")
+            with col3:
+                st.metric("Status", "🟢 Active")
+
+            st.markdown("---")
+
+            # Get session token
+            session_token = session.get("sessionToken", "demo-token")
+
+            # Test speak section
+            st.markdown("### Make Avatar Speak")
+            test_text = st.text_input("Enter text for avatar to speak:", value="Hello! I am your AI assistant.", key="test_avatar_text")
+            
+            # Get current speaking text from session state
+            current_speak_text = st.session_state.get("avatar_speak_text", "")
+            
+            if st.button("🎤 Speak Now", key="test_speak_avatar"):
+                st.session_state.avatar_speak_text = test_text
+                st.rerun()
+
+            # Show speaking status
+            if current_speak_text:
+                st.success(f"🗣️ Speaking: \"{current_speak_text[:80]}...\"" if len(current_speak_text) > 80 else f"🗣️ Speaking: \"{current_speak_text}\"")
+
+            st.markdown("---")
+
+            # Avatar video display - with speaking text if any
+            st.markdown("### Avatar Video")
+            avatar_html = anam_service.get_embed_html(
+                session_token, 
+                width=450, 
+                height=340,
+                speaking_text=current_speak_text
+            )
+            components.html(avatar_html, height=360)
+
+            # Clear speaking text after rendering
+            if current_speak_text:
+                st.session_state.avatar_speak_text = ""
+
+            # Controls
+            st.markdown("### Session Controls")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if st.button("🔄 Refresh Session", key="refresh_avatar_tab"):
+                    st.info("Refreshing avatar session...")
+                    st.rerun()
+
+            with col2:
+                if st.button("⏹️ End Session", key="stop_avatar_tab"):
+                    # End the session properly
+                    if not is_demo:
+                        try:
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+                            loop.run_until_complete(
+                                anam_service.end_session(session.get("sessionId", ""))
+                            )
+                        except Exception:
+                            pass
+                    st.session_state.anam_session_token = None
+                    st.success("Avatar session ended!")
+                    st.rerun()
+
+        else:
+            # No active session - show start options
+            st.info("🤖 Start an avatar session to enable AI video interactions")
+
+            # Configuration status
+            if is_configured:
+                st.success("✅ Anam AI API configured")
+            else:
+                st.warning("⚠️ Anam AI not configured - Demo mode available")
+                st.caption("Add ANAM_API_KEY to your .env file for live video")
+
+            st.markdown("---")
+
+            # Avatar preview placeholder
+            preview_html = anam_service.get_embed_html("demo-preview", width=400, height=300)
+            components.html(preview_html, height=320)
+
+            st.markdown("---")
+
+            # Start button
+            if st.button("🎬 Start Avatar Session", key="start_avatar_tab", type="primary"):
+                with st.spinner("Initializing avatar..."):
+                    try:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        session_data = loop.run_until_complete(
+                            anam_service.create_session_token(persona_name="AI Assistant")
+                        )
+
+                        if session_data:
+                            st.session_state.anam_session_token = session_data
+                            is_demo = session_data.get("isDemo", False)
+                            if is_demo:
+                                st.success("🎭 Demo avatar started!")
+                            else:
+                                st.success("🎭 Live avatar connected!")
+                            st.rerun()
+                        else:
+                            st.error("Failed to create avatar session")
+
+                    except Exception as e:
+                        st.error(f"Error starting avatar: {e}")
+                        st.info("💡 Check your ANAM_API_KEY configuration")
 
 else:
     st.info("👈 Please initialize a session from the sidebar to start.")
